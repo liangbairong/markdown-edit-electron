@@ -1,0 +1,32 @@
+{
+  "name": "vue-manage-system",
+  "version": "4.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "babel-polyfill": "^6.26.0",
+    "element-ui": "^2.4.11",
+    "js-pinyin": "^0.1.9",
+    "mavon-editor": "^2.7.7",
+    "node-sass": "^4.12.0",
+    "qs": "^6.8.0",
+    "sass-loader": "^8.0.0",
+    "vue": "^2.5.21",
+    "vue-cropperjs": "^3.0.0",
+    "vue-quill-editor": "^3.0.6",
+    "vue-router": "^3.0.1",
+    "vue-schart": "^1.0.0",
+    "vuedraggable": "^2.17.0",
+    "vuex": "^3.1.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.2.0",
+    "@vue/cli-service": "^3.2.0",
+    "vue-template-compiler": "^2.5.21"
+  }
+}
