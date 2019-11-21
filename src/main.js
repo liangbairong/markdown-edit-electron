@@ -23,11 +23,11 @@ import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 // use
 Vue.use(mavonEditor)
-
+import contentmenu from 'v-contextmenu'
+import 'v-contextmenu/dist/index.css'
+Vue.use(contentmenu)
 Vue.config.productionTip = false
-// Vue.use(ElementUI, {
-//     size: 'small'
-// });
+
 Vue.use(ElementUI);
 Vue.prototype.$axios = axios;
 Vue.prototype.$api = window.$api= api;

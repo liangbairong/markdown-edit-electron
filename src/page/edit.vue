@@ -36,7 +36,13 @@
       </el-col>
       <el-col :span="20">
         <el-scrollbar ref="myScrollbar" :style="`height:${mainH}px`" v-if="action.filePath">
-          <mavon-editor class="md-edit"  ref='md'  v-model="formData.value" @save="onSave" @imgAdd="imgAdd" />
+          <mavon-editor
+            class="md-edit"
+            ref="md"
+            v-model="formData.value"
+            @save="onSave"
+            @imgAdd="imgAdd"
+          />
         </el-scrollbar>
       </el-col>
     </el-row>
@@ -217,6 +223,8 @@ export default {
       this.tmDisplay = true;
       const self = this;
       document.onclick = function(ev) {
+        console.log(ev.target + "1111111111111111111");
+
         if (ev.target !== document.getElementById("perTreeMenu")) {
           self.tmDisplay = false;
         }
@@ -271,18 +279,14 @@ export default {
       var formdata = new FormData();
       formdata.append("image", $file);
       axios({
-        url: process.env.VUE_APP_ROOT+"server url",
+        url: process.env.VUE_APP_ROOT + "/upload/image",
         method: "post",
         data: formdata,
         headers: { "Content-Type": "multipart/form-data" }
-      }).then(url => {
-        // 第二步.将返回的url替换到文本原位置![...](0) -> ![...](url)
-        /**
-         * $vm 指为mavonEditor实例，可以通过如下两种方式获取
-         * 1. 通过引入对象获取: `import {mavonEditor} from ...` 等方式引入后，`$vm`为`mavonEditor`
-         * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
-         */
-        this.$refs.md.$img2Url(pos, url);
+      }).then(res => {
+        if (res.data.code == 200) {
+          this.$refs.md.$img2Url(pos, res.data.data);
+        }
       });
     },
     tranHtml(list) {

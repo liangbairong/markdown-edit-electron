@@ -11,17 +11,35 @@
     <el-row :gutter="12">
       <el-col :span="4">
         <el-card shadow="hover">
-          <div @click="addBook" class="box" style="text-align:center;">
+          <div @click="showPop" class="box box-add" style="text-align:center;">
             <el-button type="primary" class="back" icon="el-icon-plus" circle></el-button>
           </div>
         </el-card>
       </el-col>
-      <el-col :span="4" v-for="item in booksList" :key="item.value">
-        <el-card shadow="hover">
-          <div class="box" @click="onGoEdit(item.value,item.label)">{{item.label}}</div>
-        </el-card>
-      </el-col>
+      <draggable v-model="booksList" @end="end">
+        <el-col :span="4" v-for="item in booksList" :key="item.value">
+          <el-card shadow="hover">
+            <div
+              class="box"
+              @click="onGoEdit(item.value,item.label)"
+              v-contextmenu:contextmenu
+              @contextmenu.prevent="rightClick(item)"
+            >
+              <h3>{{item.label}}</h3>
+              <p>{{item.href}}</p>
+            </div>
+          </el-card>
+        </el-col>
+      </draggable>
     </el-row>
+    <v-contextmenu ref="contextmenu">
+      <v-contextmenu-item :disabled="true">
+        <i class="el-icon-edit"></i> 修改
+      </v-contextmenu-item>
+      <v-contextmenu-item @click="deleteBook">
+        <i class="el-icon-edit"></i> 删除
+      </v-contextmenu-item>
+    </v-contextmenu>
     <el-dialog title="新增书本" :visible.sync="dialogFormVisible">
       <el-form label-width="120px">
         <el-form-item label="书本名称">
@@ -47,7 +65,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button @click="closePop()">取 消</el-button>
         <el-button type="primary" @click="onAddBook">确 定</el-button>
       </div>
     </el-dialog>
@@ -55,6 +73,7 @@
 </template>
 
 <script>
+import draggable from "vuedraggable";
 
 const langList = [
   {
@@ -81,6 +100,10 @@ export default {
         bookName: "",
         lang: langList[0].value,
         langLabel: langList[0].label,
+        bookCode: "",
+        bookListDom: ""
+      },
+      action: {
         bookCode: ""
       },
       dialogFormVisible: false,
@@ -90,10 +113,13 @@ export default {
   created() {
     this.init();
   },
+  components: {
+    draggable
+  },
   watch: {
     "formData.bookName": {
       handler(val) {
-        this.formData.bookCode=this.$pinyin.getFullChars(val).toLowerCase()
+        this.formData.bookCode = this.$pinyin.getFullChars(val).toLowerCase();
       },
       deep: true,
       immediate: false
@@ -101,6 +127,7 @@ export default {
   },
   methods: {
     init() {
+      this.formData.bookListDom = "";
       this.formData.docPath =
         this.$myLocalStorage.get("docPath") || "D:/test_code/md_test";
       if (this.formData.docPath) {
@@ -114,15 +141,20 @@ export default {
           docPath: this.formData.docPath
         })
         .then(res => {
-          this.booksList = res.data;
-          this.formData.aubBookPath = this.booksList[0].value;
+          if (res.code === 200) {
+            this.booksList = res.data;
+            this.formData.aubBookPath = this.booksList[0].value;
+          }
         });
     },
     onGoEdit(value, label) {
       this.$router.push(`/edit?aubBookPath=${value}&bookLaebl=${label}`);
     },
-    addBook() {
+    showPop() {
       this.dialogFormVisible = true;
+    },
+    closePop() {
+      this.dialogFormVisible = false;
     },
     langChange() {
       console.log(this.formData.lang);
@@ -132,20 +164,87 @@ export default {
 
       console.log(this.formData.langLabel);
     },
+    finishingList() {
+      this.formData.bookListDom = "<ul>";
+      this.booksList.forEach(item => {
+        this.formData.bookListDom += `<li><a href="${item.href}">${item.label}</a></li>`;
+      });
+      this.formData.bookListDom += "/<ul>";
+    },
     onAddBook() {
+      this.booksList.push({
+        href: this.formData.bookCode + "-" + this.formData.lang,
+        label: this.formData.bookName + "-" + this.formData.langLabel,
+        value:
+          this.formData.docPath +
+          "/" +
+          this.formData.bookCode +
+          "-" +
+          this.formData.lang
+      });
+      this.finishingList();
+
       this.$api
         .add_books({
           bookName: this.formData.bookName + "-" + this.formData.langLabel,
           bookCode: this.formData.bookCode + "-" + this.formData.lang,
-          docPath: this.formData.docPath
+          docPath: this.formData.docPath,
+          bookListDom: this.formData.bookListDom
         })
-        .then(res => {});
+        .then(res => {
+          if (res.code === 200) {
+            this.closePop();
+            // this.init();
+          }
+        });
+    },
+    end(event) {
+      var list = JSON.parse(JSON.stringify(this.booksList));
+      var list2 = JSON.parse(JSON.stringify(this.booksList));
+      list[event.oldIndex] = list2[event.oldIndex];
+      list[event.newIndex] = list2[event.newIndex];
+      this.booksList = list;
+    },
+    rightClick(op) {
+      console.log(op);
+      this.action.bookCode = op.href;
+      this.action.label=op.label
+      this.action.label=op.label
+    },
+    deleteBook() {
+      this.$confirm(`是否确认删除 ${this.action.label} ?`, "提示", {
+        confirmButtonText: "删除",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          let index = 0;
+          this.booksList.forEach((item, i) => {
+            if (item.href === this.action.bookCode) {
+              index = i;
+            }
+          });
+          this.booksList.splice(index, 1);
+          this.finishingList();
+          this.$api
+            .del_books({
+              docPath: this.formData.docPath,
+              bookListDom: this.formData.bookListDom,
+              bookCode:this.action.bookCode
+            })
+            .then(res => {
+              if (res.code === 200) {
+                // this.init();
+              }
+            });
+        })
+        .catch(() => {});
     }
   }
 };
 </script>
 
-<style scoped>
+<style lang='scss' scoped>
 .content {
   padding: 20px;
 }
@@ -157,7 +256,19 @@ export default {
   cursor: pointer;
 }
 .box {
+  padding: 20px;
   height: 60px;
+  /* line-height: 60px; */
+  p {
+    margin-top: 15px;
+  }
+}
+.box-add {
   line-height: 60px;
+}
+</style>
+<style >
+.el-card__body {
+  padding: 0;
 }
 </style>

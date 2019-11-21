@@ -83,5 +83,27 @@ export default {
       }
     })
   },
+
+  clone(param){
+    return http({
+      url:  process.env.VUE_APP_ROOT + '/git/clone',
+      method: "get",
+      data:{
+       ...param,
+      }
+    })
+  },
+
+  del_books(param){
+    return http({
+      url:  process.env.VUE_APP_ROOT + '/del_books',
+      method: "post",
+      data:{
+       ...param,
+      }
+    })
+  },
+
+
  
 }
