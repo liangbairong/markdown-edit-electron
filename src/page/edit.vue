@@ -111,6 +111,15 @@ export default {
   created() {
     this.init();
   },
+  watch: {
+    "formData.fileLabel": {
+      handler(val) {
+        this.formData.filePath = this.$pinyin.getFullChars(val).toLowerCase();
+      },
+      deep: true,
+      immediate: false
+    }
+  },
   methods: {
     init() {
       this.mainH = document.documentElement.clientHeight - 50;
@@ -173,12 +182,16 @@ export default {
     },
     // tree插入新章节
     appendSilde(data) {
+      // TODO:README bug
+      if (this.fileList.length === 0) {
+        this.formData.filePath = "README";
+      }
       const newChild = {
         filePath: this.formData.filePath + ".md",
         label: this.formData.fileLabel,
         children: []
       };
-      if (this.fileList.length === 0) {
+      if (!data.label) {
         this.fileList.push(newChild);
       } else {
         if (!data.children) {
@@ -400,5 +413,8 @@ export default {
 }
 .el-scrollbar__wrap {
   overflow-x: hidden;
+}
+.dropdown-images {
+  display: none;
 }
 </style>

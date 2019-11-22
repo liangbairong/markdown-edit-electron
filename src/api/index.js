@@ -103,7 +103,16 @@ export default {
       }
     })
   },
-
+  update_books_rank(param){
+    return http({
+      url:  process.env.VUE_APP_ROOT + '/update_books_rank',
+      method: "post",
+      data:{
+       ...param,
+      }
+    })
+  },
+  
 
  
 }
