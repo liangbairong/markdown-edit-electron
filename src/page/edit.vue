@@ -59,11 +59,25 @@
     </div>
 
     <el-dialog title="新增章节" :visible.sync="dialogFormVisible">
-      <el-form label-width="120px">
-        <el-form-item label="章节名称">
+      <el-form label-width="120px" ref="dataForm" :model="formData">
+        <el-form-item
+          label="章节名称"
+          prop="fileLabel"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
           <el-input v-model="formData.fileLabel" placeholder="如：移动应用开发平台"></el-input>
         </el-form-item>
-        <el-form-item label="md文件名称">
+        <el-form-item
+          label="md文件名称"
+          prop="filePath"
+          :rules="[
+                    {trigger: 'blur', required: true, validator: validateFilePath},
+                  ]"
+        >
           <el-input v-model="formData.filePath" style="width:80%" placeholder="如：sjs 或 doc/sjs"></el-input>
           <el-input value=".md" :disabled="true" style="width:20%"></el-input>
         </el-form-item>
@@ -110,6 +124,12 @@ export default {
   },
   created() {
     this.init();
+    this.mainH = document.documentElement.clientHeight - 50;
+  },
+  mounted() {
+    //  window.addEventListener('resize',()=>{
+    //    this.mainH = document.documentElement.clientHeight-50;
+    // })
   },
   watch: {
     "formData.fileLabel": {
@@ -122,7 +142,6 @@ export default {
   },
   methods: {
     init() {
-      this.mainH = document.documentElement.clientHeight - 50;
       this.formData.aubBookPath = this.$route.query.aubBookPath;
       this.formData.bookLaebl = this.$route.query.bookLaebl;
       this.getDirectory();
@@ -162,30 +181,78 @@ export default {
           this.getDirectory();
         });
     },
+    isFilePathCf(list) {
+      for (var i = 0, len = list.length; i < len; i++) {
+        if (list[i].filePath == this.formData.filePath + ".md") {
+          return true;
+          break;
+          
+        } else {
+          if (list[i].children.length > 0) {
+            this.isFilePathCf(list[i].children);
+          }
+        }
+      }
+      return false;
+    },
+     isFilePathREADME(list) {
+      for (var i = 0, len = list.length; i < len; i++) {
+        if (list[i].filePath == "README.md") {
+          return true;
+          break;
+          
+        } else {
+          if (list[i].children.length > 0) {
+            this.isFilePathCf(list[i].children);
+          }
+        }
+      }
+      return false;
+      
+    },
+    validateFilePath(rule, value, callback) {
+      if (!value) {
+        callback("不能为空");
+      } else {
+        if (this.isFilePathCf(this.fileList)) {
+          callback("文件夹名称已重复");
+        } else {
+          callback();
+        }
+      }
+    },
     // 新增文件
     onAddFile() {
-      this.appendSilde(this.formData.parenData);
-      this.fileListDom = "";
-      this.tranHtml(this.fileList);
-      this.$api
-        .add_file({
-          fileLabel: this.formData.fileLabel,
-          filePath: this.formData.filePath + ".md",
-          parentPath: this.formData.parentPath,
-          docPath: this.formData.aubBookPath,
-          fileListDom: this.fileListDom
-        })
-        .then(res => {
-          this.dialogFormVisible = false;
-          this.getDirectory();
-        });
+      this.$refs["dataForm"].validate(valid => {
+        if (valid) {
+          this.appendSilde(this.formData.parenData);
+          this.fileListDom = "";
+          this.tranHtml(this.fileList);
+          this.$api
+            .add_file({
+              fileLabel: this.formData.fileLabel,
+              filePath: this.formData.filePath + ".md",
+              parentPath: this.formData.parentPath,
+              docPath: this.formData.aubBookPath,
+              fileListDom: this.fileListDom
+            })
+            .then(res => {
+              this.dialogFormVisible = false;
+              this.getDirectory();
+            });
+        }
+      });
     },
     // tree插入新章节
     appendSilde(data) {
       // TODO:README bug
-      if (this.fileList.length === 0) {
-        this.formData.filePath = "README";
+      // if (this.fileList.length === 0) {
+      //   this.formData.filePath = "README";
+      // }
+      if(!this.isFilePathREADME(this.fileList)){
+         this.formData.filePath = "README";
       }
+      
       const newChild = {
         filePath: this.formData.filePath + ".md",
         label: this.formData.fileLabel,

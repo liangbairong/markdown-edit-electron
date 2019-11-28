@@ -80,11 +80,9 @@
           <el-form-item
             label="文件夹名称"
             prop="bookCode"
-            :rules="[{
-                    trigger: 'blur',
-                    required: true,
-                    message: '不能为空'
-                  }]"
+            :rules="[
+                    {trigger: 'blur', required: true, validator: validateBookCode},
+                  ]"
           >
             <el-input v-model="formData.bookCode" placeholder="如：ydyykfpt"></el-input>
           </el-form-item>
@@ -139,6 +137,12 @@ export default {
   },
   mounted() {
     this.init();
+    // window.addEventListener('resize',()=>{
+    //   console.log("A")
+    //    this.mainH = document.documentElement.clientHeight;
+    //    this.$refs.myScrollbar
+    // })
+    console.log(this.$refs.myScrollbar);
     this.mainH = document.documentElement.clientHeight;
   },
   components: {
@@ -202,6 +206,19 @@ export default {
         this.formData.bookListDom += `<li><a href="${item.href}">${item.label}</a></li>`;
       });
       this.formData.bookListDom += "/<ul>";
+    },
+
+    validateBookCode(rule, value, callback) {
+      if (!value) {
+        callback("不能为空");
+      } else {
+        this.booksList.forEach(item=>{
+          if(item.href==this.formData.bookCode + "-" + this.formData.lang){
+            callback("文件夹名称已重复");
+          }
+        })
+        callback();
+      }
     },
     // 新增书籍
     onAddBook() {
