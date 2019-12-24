@@ -1,6 +1,7 @@
 module.exports = {
     lintOnSave: true, 
-    baseUrl: './',
+    outputDir:'client',
+    publicPath: './',
     productionSourceMap: false,
     devServer: {
         proxy: {

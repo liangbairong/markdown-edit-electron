@@ -11,8 +11,9 @@
                     message: '不能为空'
                   }]"
         >
-          <el-input v-model="formData.docPath" placeholder="请输入本地文件夹路径">
-            <el-button slot="append" type="primary" @click="onQuery">确定</el-button>
+          <el-input v-model="formData.docPath" :disabled="true" placeholder="请输入本地文件夹路径">
+            <el-button slot="append" class="select-fold" type="primary" @click="selectFolder">选择文件夹</el-button>
+            <el-button slot="append" type="primary" @click="onQuery">搜索</el-button>
           </el-input>
         </el-form-item>
       </el-form>
@@ -98,7 +99,6 @@
 
 <script>
 import draggable from "vuedraggable";
-
 const langList = [
   {
     label: "简体版",
@@ -144,6 +144,10 @@ export default {
     // })
     console.log(this.$refs.myScrollbar);
     this.mainH = document.documentElement.clientHeight;
+
+    // window.electron.ipcRenderer.on('ping', (event, message) => {
+    //   console.log(message) // Prints 'whoooooooh!'，这里的message是object类型
+    // })
   },
   components: {
     draggable
@@ -158,6 +162,18 @@ export default {
     }
   },
   methods: {
+    // 选择文件夹
+    selectFolder(){
+      this.$api.get_folder().then(res=>{
+        console.log(res)
+        if(res.code===200){
+          if(!res.data.canceled){
+            // strurl = strurl .
+            this.formData.docPath= res.data.filePaths[0].replace(/\\/g,"/")
+          }
+        }
+      })
+    },
     init() {
       this.formData.bookListDom = "";
       this.formData.docPath =
@@ -175,6 +191,7 @@ export default {
               docPath: this.formData.docPath
             })
             .then(res => {
+              console.log(res)
               if (res.code === 200) {
                 this.booksList = res.data;
                 this.formData.aubBookPath = this.booksList[0].value;
@@ -322,7 +339,6 @@ export default {
 .box {
   padding: 20px;
   height: 60px;
-  /* line-height: 60px; */
   p {
     margin-top: 15px;
   }
@@ -331,8 +347,17 @@ export default {
   line-height: 60px;
 }
 </style>
-<style >
+<style lang="scss">
 .el-card__body {
   padding: 0;
+}
+.select-fold{
+  background: orangered !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  margin-right: 0px !important;
+  span{
+      color: #fff !important;
+  }
 }
 </style>

@@ -1,14 +1,9 @@
 
 import http from './http'
-import {
-  myLocalStorage
-} from '@/uilts/uilts'
-
 export default {
   get_books(param) {
     return http({
-      url:  process.env.VUE_APP_ROOT + '/get_books',
-      method: "get",
+      url:  'get_books',
       data:{
        ...param,
       }
@@ -17,8 +12,7 @@ export default {
 
   get_directory(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/get_directory',
-      method: "get",
+      url:  'get_directory',
       data:{
        ...param,
       }
@@ -26,8 +20,7 @@ export default {
   },
   get_book_content(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/get_book_content',
-      method: "get",
+      url:  'get_book_content',
       data:{
        ...param,
       }
@@ -36,8 +29,7 @@ export default {
 
   add_books(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/add_books',
-      method: "post",
+      url:  'add_books',
       data:{
        ...param,
       }
@@ -46,8 +38,7 @@ export default {
 
   add_file(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/add_file',
-      method: "post",
+      url:  'add_file',
       data:{
        ...param,
       }
@@ -57,8 +48,7 @@ export default {
 
   update_file(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/update_file',
-      method: "post",
+      url:  'update_file',
       data:{
        ...param,
       }
@@ -67,8 +57,7 @@ export default {
 
   update_rank(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/update_rank',
-      method: "post",
+      url:  'update_rank',
       data:{
        ...param,
       }
@@ -76,18 +65,7 @@ export default {
   },
   del_file(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/del_file',
-      method: "post",
-      data:{
-       ...param,
-      }
-    })
-  },
-
-  clone(param){
-    return http({
-      url:  process.env.VUE_APP_ROOT + '/git/clone',
-      method: "get",
+      url:  'del_file',
       data:{
        ...param,
       }
@@ -96,8 +74,7 @@ export default {
 
   del_books(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/del_books',
-      method: "post",
+      url:  'del_books',
       data:{
        ...param,
       }
@@ -105,14 +82,30 @@ export default {
   },
   update_books_rank(param){
     return http({
-      url:  process.env.VUE_APP_ROOT + '/update_books_rank',
-      method: "post",
+      url:  'update_books_rank',
+      data:{
+       ...param,
+      }
+    })
+  },
+
+  upload_image(param){
+    return http({
+      url:  'upload_image',
+      data:{
+       ...param,
+      }
+    })
+  },
+  get_folder(param){
+    return http({
+      url:  'get_folder',
       data:{
        ...param,
       }
     })
   },
   
-
+  
  
 }

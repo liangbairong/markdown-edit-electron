@@ -119,7 +119,8 @@ export default {
         fileLabel: "",
         filePath: "",
         oldValue: ""
-      }
+      },
+      imageIndex: 1
     };
   },
   created() {
@@ -186,7 +187,6 @@ export default {
         if (list[i].filePath == this.formData.filePath + ".md") {
           return true;
           break;
-          
         } else {
           if (list[i].children.length > 0) {
             this.isFilePathCf(list[i].children);
@@ -195,12 +195,11 @@ export default {
       }
       return false;
     },
-     isFilePathREADME(list) {
+    isFilePathREADME(list) {
       for (var i = 0, len = list.length; i < len; i++) {
         if (list[i].filePath == "README.md") {
           return true;
           break;
-          
         } else {
           if (list[i].children.length > 0) {
             this.isFilePathCf(list[i].children);
@@ -208,7 +207,6 @@ export default {
         }
       }
       return false;
-      
     },
     validateFilePath(rule, value, callback) {
       if (!value) {
@@ -249,10 +247,10 @@ export default {
       // if (this.fileList.length === 0) {
       //   this.formData.filePath = "README";
       // }
-      if(!this.isFilePathREADME(this.fileList)){
-         this.formData.filePath = "README";
+      if (!this.isFilePathREADME(this.fileList)) {
+        this.formData.filePath = "README";
       }
-      
+
       const newChild = {
         filePath: this.formData.filePath + ".md",
         label: this.formData.fileLabel,
@@ -276,10 +274,37 @@ export default {
 
         console.log(param);
         this.$api.get_book_content({ contentPath: param.aubPath }).then(res => {
-          this.formData.value = res.data.replace(
-            RegExp("./assets/image", "g"),
-            process.env.VUE_APP_ROOT + "/assets/image"
-          );
+          console.log(res);
+          this.formData.value = res.data;
+          // this.imageIndex = 1;
+          if (this.formData.value.indexOf("../../../assets/image") != -1) {
+            // 包含
+            this.imageIndex = 4;
+            this.formData.value = res.data.replace(
+              RegExp("../../../assets/image", "g"),
+              this.formData.aubBookPath + "/assets/image"
+            );
+          } else if (this.formData.value.indexOf("../../assets/image") != -1) {
+            this.imageIndex = 3;
+            this.formData.value = res.data.replace(
+              RegExp("../../assets/image", "g"),
+              this.formData.aubBookPath + "/assets/image"
+            );
+          } else if (this.formData.value.indexOf("../assets/image") != -1) {
+            this.imageIndex = 2;
+            this.formData.value = res.data.replace(
+              RegExp("../assets/image", "g"),
+              this.formData.aubBookPath + "/assets/image"
+            );
+          } else {
+            this.imageIndex = 1;
+            this.formData.value = res.data.replace(
+              RegExp("./assets/image", "g"),
+              this.formData.aubBookPath + "/assets/image"
+            );
+          }
+          console.log(this.imageIndex);
+
           this.action.oldValue = this.formData.value;
         });
       } else {
@@ -355,19 +380,23 @@ export default {
     },
 
     imgAdd(pos, $file) {
-      // 第一步.将图片上传到服务器.
-      var formdata = new FormData();
-      formdata.append("image", $file);
-      axios({
-        url: process.env.VUE_APP_ROOT + "/upload/image",
-        method: "post",
-        data: formdata,
-        headers: { "Content-Type": "multipart/form-data" }
-      }).then(res => {
-        if (res.data.code == 200) {
-          this.$refs.md.$img2Url(pos, res.data.data);
-        }
-      });
+      this.$api
+        .upload_image({
+          docPath: this.formData.aubBookPath,
+          image: $file.miniurl,
+          imageType: $file.name.split(".")[1],
+          filePath: this.action.filePath
+        })
+        .then(res => {
+          if (res.code === 200) {
+            console.log(res.data);
+            // this.imageIndex=res.data.level
+            this.$refs.md.$img2Url(
+              pos,
+              this.formData.aubBookPath + res.data.data
+            );
+          }
+        });
     },
     tranHtml(list) {
       this.fileListDom += `<ul>`;
@@ -386,14 +415,44 @@ export default {
       if (!this.action.fileLabel && !this.action.filePath) {
         return;
       }
+
+      let content = this.formData.value;
+
+      const level = this.action.filePath.split("/");
+      console.log(level);
+      switch (level.length) {
+        case 1:
+          content = this.formData.value.replace(
+            RegExp(this.formData.aubBookPath + "/assets/image", "g"),
+            "./assets/image"
+          );
+          break;
+        case 2:
+          content = this.formData.value.replace(
+            RegExp(this.formData.aubBookPath + "/assets/image", "g"),
+            "../assets/image"
+          );
+          break;
+        case 3:
+          content = this.formData.value.replace(
+            RegExp(this.formData.aubBookPath + "/assets/image", "g"),
+            "../../assets/image"
+          );
+          break;
+        case 4:
+          content = this.formData.value.replace(
+            RegExp(this.formData.aubBookPath + "/assets/image", "g"),
+            "../../../assets/image"
+          );
+          break;
+      }
+
+      console.log(this.formData.aubBookPath);
       this.$api
         .update_file({
           fileLabel: this.action.fileLabel,
           filePath: this.action.filePath,
-          content: this.formData.value.replace(
-            RegExp(process.env.VUE_APP_ROOT + "/assets/image", "g"),
-            "./assets/image"
-          ),
+          content,
           docPath: this.formData.aubBookPath
         })
         .then(res => {

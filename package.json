@@ -1,19 +1,29 @@
 {
   "name": "vue-manage-system",
-  "version": "4.0.0",
+  "version": "2.0.0",
   "private": true,
+  "main": "./electron/main.js",
   "scripts": {
-    "dev": "npm run serve",
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "dev": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "start": "cross-env NODE_ENV=development electron .",
+    "distWin": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && electron-builder --win --x64",
+    "distMac": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && electron-builder --mac --x64"
+  },
+  "build": {
+    "productName": "md编辑器",
+    "win": {
+      "icon": "logo.ico"
+    },
+    "mac": {
+      "icon": "logo.ico"
+    }
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "babel-polyfill": "^6.26.0",
     "element-ui": "^2.4.11",
     "js-pinyin": "^0.1.9",
     "mavon-editor": "^2.7.7",
-    "node-sass": "^4.12.0",
     "qs": "^6.8.0",
     "sass-loader": "^8.0.0",
     "v-contextmenu": "^2.8.1",
@@ -24,11 +34,23 @@
     "vue-runtime-helpers": "^1.1.2",
     "vue-schart": "^1.0.0",
     "vuedraggable": "^2.23.2",
-    "vuex": "^3.1.1"
+    "vuex": "^3.1.1",
+    "marked": "^0.7.0",
+    "node-dir": "^0.1.17",
+    "file-system": "^2.2.2",
+    "html2markdown": "^1.1.0",
+    "cheerio": "^1.0.0-rc.3",
+    "child_process": "^1.0.2",
+    "html-entities": "^1.2.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.2.0",
     "@vue/cli-service": "^3.2.0",
+    "babel-polyfill": "^6.26.0",
+    "cross-env": "^6.0.3",
+    "electron": "7.1.2",
+    "electron-rebuild": "^1.8.8",
+    "node-sass": "^4.12.0",
     "vue-template-compiler": "^2.5.21"
   }
 }
