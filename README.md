@@ -1,1 +1,1 @@
-md文档编辑器前端工程
+markdown文档编辑器，支持win和mac系统
