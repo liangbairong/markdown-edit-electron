@@ -195,21 +195,21 @@ class api {
 
       const level = filePath.split("/");
       console.log(level)
-      let imagePath = ''
-      switch (level.length) {
-        case 1:
-          imagePath = './assets/image/' + imageName
-          break;
-        case 2:
-          imagePath = '../assets/image/' + imageName
-          break;
-        case 3:
-          imagePath = '../../assets/image/' + imageName
-          break;
-        case 4:
-          imagePath = '../../../assets/image/' + imageName
-          break;
-      }
+      // let imagePath = ''
+      // switch (level.length) {
+      //   case 1:
+      //     imagePath = './assets/image/' + imageName
+      //     break;
+      //   case 2:
+      //     imagePath = '../assets/image/' + imageName
+      //     break;
+      //   case 3:
+      //     imagePath = '../../assets/image/' + imageName
+      //     break;
+      //   case 4:
+      //     imagePath = '../../../assets/image/' + imageName
+      //     break;
+      // }
       mainWindow.webContents.send('upload_image', {
         code: 200,
         data: {
