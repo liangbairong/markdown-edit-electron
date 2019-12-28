@@ -1,1 +1,1 @@
-markdown文档编辑器，支持win和mac系统
+markdown文档编辑器，使用electron进行打包，支持win和mac系统
