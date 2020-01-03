@@ -1,6 +1,6 @@
 <template>
   <el-scrollbar ref="myScrollbar" :style="`height:${mainH}px`">
-    <div class="content">
+    <div class="content-main">
       <el-form class="demo-form-inline" ref="searchForm" :model="formData">
         <el-form-item
           label="项目本地文件夹路径"
@@ -28,17 +28,19 @@
         </el-col>
         <draggable v-model="booksList" @end="end">
           <el-col :span="4" v-for="item in booksList" :key="item.value">
-            <el-card shadow="hover">
-              <div
-                class="box"
-                @click="onGoEdit(item.value,item.label)"
-                v-contextmenu:contextmenu
-                @contextmenu.prevent="rightClick(item)"
-              >
-                <h3>{{item.label}}</h3>
-                <p>{{item.href}}</p>
-              </div>
-            </el-card>
+            <el-tooltip class="item" effect="dark" :content="item.label" placement="top">
+              <el-card shadow="hover">
+                <div
+                  class="box"
+                  @click="onGoEdit(item.value,item.label)"
+                  v-contextmenu:contextmenu
+                  @contextmenu.prevent="rightClick(item)"
+                >
+                  <h3>{{item.label}}</h3>
+                  <p>{{item.href}}</p>
+                </div>
+              </el-card>
+            </el-tooltip>
           </el-col>
         </draggable>
       </el-row>
@@ -94,6 +96,7 @@
         </div>
       </el-dialog>
     </div>
+    <!-- <el-button @click="max()">最大化</el-button> -->
   </el-scrollbar>
 </template>
 
@@ -137,17 +140,12 @@ export default {
   },
   mounted() {
     this.init();
-    // window.addEventListener('resize',()=>{
-    //   console.log("A")
-    //    this.mainH = document.documentElement.clientHeight;
-    //    this.$refs.myScrollbar
-    // })
+    // window.addEventListener("resize", () => {
+    //   console.log("A");
+    //   this.mainH = document.documentElement.clientHeight - 40;
+    // });
     console.log(this.$refs.myScrollbar);
-    this.mainH = document.documentElement.clientHeight;
-
-    // window.electron.ipcRenderer.on('ping', (event, message) => {
-    //   console.log(message) // Prints 'whoooooooh!'，这里的message是object类型
-    // })
+    this.mainH = document.documentElement.clientHeight - 40;
   },
   components: {
     draggable
@@ -163,16 +161,16 @@ export default {
   },
   methods: {
     // 选择文件夹
-    selectFolder(){
-      this.$api.get_folder().then(res=>{
-        console.log(res)
-        if(res.code===200){
-          if(!res.data.canceled){
+    selectFolder() {
+      this.$api.get_folder().then(res => {
+        console.log(res);
+        if (res.code === 200) {
+          if (!res.data.canceled) {
             // strurl = strurl .
-            this.formData.docPath= res.data.filePaths[0].replace(/\\/g,"/")
+            this.formData.docPath = res.data.filePaths[0].replace(/\\/g, "/");
           }
         }
-      })
+      });
     },
     init() {
       this.formData.bookListDom = "";
@@ -191,7 +189,7 @@ export default {
               docPath: this.formData.docPath
             })
             .then(res => {
-              console.log(res)
+              console.log(res);
               if (res.code === 200) {
                 this.booksList = res.data;
                 this.formData.aubBookPath = this.booksList[0].value;
@@ -229,11 +227,11 @@ export default {
       if (!value) {
         callback("不能为空");
       } else {
-        this.booksList.forEach(item=>{
-          if(item.href==this.formData.bookCode + "-" + this.formData.lang){
+        this.booksList.forEach(item => {
+          if (item.href == this.formData.bookCode + "-" + this.formData.lang) {
             callback("文件夹名称已重复");
           }
-        })
+        });
         callback();
       }
     },
@@ -326,7 +324,7 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-.content {
+.content-main {
   padding: 20px;
 }
 .title {
@@ -339,8 +337,17 @@ export default {
 .box {
   padding: 20px;
   height: 60px;
+  font-size: 14px;
+  h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   p {
     margin-top: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 .box-add {
@@ -351,13 +358,18 @@ export default {
 .el-card__body {
   padding: 0;
 }
-.select-fold{
+.select-fold {
   background: orangered !important;
   color: #fff !important;
   border-radius: 0 !important;
   margin-right: 0px !important;
-  span{
-      color: #fff !important;
+  span {
+    color: #fff !important;
   }
+}
+
+.el-scrollbar__wrap {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 </style>

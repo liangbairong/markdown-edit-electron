@@ -17,7 +17,10 @@ function createWindow() {
       nodeIntegration: true, // 是否集成 Nodejs
       webSecurity: false,
       preload: path.join(__dirname, './renderer.js')
-    }
+    },
+    // autoHideMenuBar:true,
+    frame:false,
+    // transparent: true,
   })
 
   if(process.env.NODE_ENV === 'development'){

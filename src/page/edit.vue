@@ -125,7 +125,7 @@ export default {
   },
   created() {
     this.init();
-    this.mainH = document.documentElement.clientHeight - 50;
+    this.mainH = document.documentElement.clientHeight - 50-40;
   },
   mounted() {
     //  window.addEventListener('resize',()=>{

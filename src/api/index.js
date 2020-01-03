@@ -1,6 +1,30 @@
 
 import http from './http'
 export default {
+  close(param) {
+    return http({
+      url:  'close',
+      data:{
+       ...param,
+      }
+    })
+  },
+  min(param) {
+    return http({
+      url:  'min',
+      data:{
+       ...param,
+      }
+    })
+  },
+  max(param) {
+    return http({
+      url:  'max',
+      data:{
+       ...param,
+      }
+    })
+  },
   get_books(param) {
     return http({
       url:  'get_books',

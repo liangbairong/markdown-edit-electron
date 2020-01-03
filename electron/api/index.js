@@ -1,4 +1,4 @@
-const { ipcMain,dialog  } = require('electron')
+const { ipcMain, dialog } = require('electron')
 var dir = require('node-dir');
 const path = require('path')
 const fs = require('fs')
@@ -20,29 +20,48 @@ function updateLangs(docPath, bookListDom) {
 
 class api {
   constructor(mainWindow) {
+    // 最小化
+    ipcMain.on('min', async (sys, query) => {
+      mainWindow.minimize();
+    })
+
+    // 最大化
+    ipcMain.on('max', async (sys, query) => {
+      if (mainWindow.isMaximized()) {
+        mainWindow.restore();
+      } else {
+        mainWindow.maximize();
+      }
+
+    })
+    // 关闭
+    ipcMain.on('close', async (sys, query) => {
+      mainWindow.close();
+    })
+
     // 选择文件夹
     ipcMain.on('get_folder', async (sys, query) => {
-        dialog.showOpenDialog({
-           properties:['openDirectory']
-          }).then(result => {
-          mainWindow.webContents.send('get_folder', {
-            code: 200,
-            data: result
-          })
+      dialog.showOpenDialog({
+        properties: ['openDirectory']
+      }).then(result => {
+        mainWindow.webContents.send('get_folder', {
+          code: 200,
+          data: result
         })
-        
+      })
+
     })
     // 获取书本列表
     ipcMain.on('get_books', async (sys, query) => {
       let docPath = query.docPath
       if (!docPath) {
-        new ThrowError('get_books', 400, '文件夹路径docPath不能为空',mainWindow)
+        new ThrowError('get_books', 400, '文件夹路径docPath不能为空', mainWindow)
       }
       try {
         var sum_data = fileSystem.readFileSync(path.join(docPath + '/LANGS.md'));
       } catch (err) {
         if (!sum_data) {
-          new ThrowError('get_books',400, '该文件夹下，LANGS.md文件不存在',mainWindow)
+          new ThrowError('get_books', 400, '该文件夹下，LANGS.md文件不存在', mainWindow)
         }
       }
       var $ = cheerio.load(marked(sum_data.toString()))
@@ -65,7 +84,7 @@ class api {
     ipcMain.on('get_directory', async (sys, query) => {
       let bookPath = query.bookPath
       if (!bookPath) {
-        new ThrowError('get_directory', 400, 'bookPath为空',mainWindow)
+        new ThrowError('get_directory', 400, 'bookPath为空', mainWindow)
       }
       var sum_data = fileSystem.readFileSync(path.join(bookPath + '/SUMMARY.md'));
       var $ = cheerio.load(marked(sum_data.toString()))
@@ -213,8 +232,8 @@ class api {
       mainWindow.webContents.send('upload_image', {
         code: 200,
         data: {
-          level:level.length,
-          data:'/assets/image/' + imageName
+          level: level.length,
+          data: '/assets/image/' + imageName
         }
       })
     })
