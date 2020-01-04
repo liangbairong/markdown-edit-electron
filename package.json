@@ -7,8 +7,8 @@
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "start": "cross-env NODE_ENV=development electron .",
-    "distWin": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && electron-builder --win --x64",
-    "distMac": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && electron-builder --mac --x64"
+    "distWin": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && npx electron-builder --win --x64",
+    "distMac": "cross-env NODE_ENV=production ./node_modules/.bin/electron-rebuild && npx electron-builder --mac --x64"
   },
   "build": {
     "productName": "md编辑器",
