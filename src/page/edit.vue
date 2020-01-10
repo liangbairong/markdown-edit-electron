@@ -1,14 +1,14 @@
 <template>
   <el-container>
     <el-header height="50px" class="edit_header">
-      <el-button
+      <!-- <el-button
         type="primary"
         size="small"
         class="back"
         @click="back"
         icon="el-icon-arrow-left"
         circle
-      ></el-button>
+      ></el-button>-->
       {{formData.bookLaebl}}
       <span v-if="action.fileLabel">- {{action.fileLabel}}</span>
       <i class="el-icon-s-opportunity edie-i" v-if="action.oldValue != formData.value"></i>
@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import gitMix from "@/mixins/git";
 export default {
   data: function() {
     return {
@@ -123,9 +123,10 @@ export default {
       imageIndex: 1
     };
   },
+  mixins: [gitMix],
   created() {
     this.init();
-    this.mainH = document.documentElement.clientHeight - 50-40;
+    this.mainH = document.documentElement.clientHeight - 50 - 40;
   },
   mounted() {
     //  window.addEventListener('resize',()=>{
@@ -146,6 +147,8 @@ export default {
       this.formData.aubBookPath = this.$route.query.aubBookPath;
       this.formData.bookLaebl = this.$route.query.bookLaebl;
       this.getDirectory();
+      console.log(this.$route.query.aubBookPath);
+      // this.getGitChangeList({ projectPath: this.projectPath});
     },
     getDirectory() {
       this.$api
@@ -154,6 +157,7 @@ export default {
         })
         .then(res => {
           this.fileList = res.data;
+          this.getGitChangeList({ projectPath: this.projectPath });
         });
     },
     oneShowAddMd() {
@@ -237,6 +241,7 @@ export default {
             .then(res => {
               this.dialogFormVisible = false;
               this.getDirectory();
+              this.getGitChangeList({ projectPath: this.projectPath });
             });
         }
       });
@@ -306,6 +311,8 @@ export default {
           console.log(this.imageIndex);
 
           this.action.oldValue = this.formData.value;
+
+          this.getGitChangeList({ projectPath: this.projectPath });
         });
       } else {
         this.$confirm("文件有修改，还没保存，是否进行保存？", "提示", {
@@ -372,12 +379,13 @@ export default {
               type: "success",
               duration: 500
             });
+            this.getGitChangeList({ projectPath: this.projectPath });
           }
         });
     },
-    back() {
-      this.$router.go(-1);
-    },
+    // back() {
+    //   this.$router.go(-1);
+    // },
 
     imgAdd(pos, $file) {
       this.$api
@@ -395,6 +403,7 @@ export default {
               pos,
               this.formData.aubBookPath + res.data.data
             );
+            this.getGitChangeList({ projectPath: this.projectPath });
           }
         });
     },
@@ -466,6 +475,7 @@ export default {
 
             console.log(this.action.oldValue);
             console.log(this.formData.value);
+            this.getGitChangeList({ projectPath: this.projectPath });
           }
         });
     }

@@ -1,6 +1,81 @@
 
 import http from './http'
 export default {
+  
+   // 删除项目
+   del_project(param) {
+    return http({
+      url:  'del_project',
+      data:{
+       ...param,
+      }
+    })
+  },
+  // 克隆代码
+  git_clone(param) {
+    return http({
+      url:  'git_clone',
+      data:{
+       ...param,
+      }
+    })
+  },
+  // 获取分支
+  get_git_branch(param){
+    return http({
+      url:  'get_git_branch',
+      data:{
+       ...param,
+      }
+    })
+  },
+  // 切换分支
+  switch_git_branch(param){
+    return http({
+      url:  'switch_git_branch',
+      data:{
+       ...param,
+      }
+    })
+  },
+  // 获取修改的文件
+  get_git_status(param){
+    return http({
+      url:  'get_git_status',
+      data:{
+       ...param,
+      }
+    })
+  },
+  // 更新代码
+  git_pull(param){
+    return http({
+      url:  'git_pull',
+      data:{
+       ...param,
+      }
+    })
+  },
+   // 检测冲突文件
+   git_diff(param){
+    return http({
+      url:  'git_diff',
+      data:{
+       ...param,
+      }
+    })
+  },
+   // 提交代码
+   git_push(param){
+    return http({
+      url:  'git_push',
+      data:{
+       ...param,
+      }
+    })
+  },
+
+
   close(param) {
     return http({
       url:  'close',

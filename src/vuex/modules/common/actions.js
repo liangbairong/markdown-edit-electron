@@ -6,12 +6,11 @@
 import api from '@/api/index'
 
 export default {
-  // 获取用户信息
-  getUserInfo({ commit }) {
-    api.user.getUserInfo().then(res=>{
+  getGitChangeList({ commit },params) {
+    api.get_git_status(params).then(res=>{
       if(res.code===200){
-        window.$mySessionstorage.set('userInfo',res.data);
-        commit('setUserInfo', res.data);
+        console.log(res.data)
+        commit('setGitChangeList', res.data);
       }
     })
   },

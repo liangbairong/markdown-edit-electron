@@ -1,205 +1,201 @@
 <template>
   <el-scrollbar ref="myScrollbar" :style="`height:${mainH}px`">
     <div class="content-main">
-      <el-form class="demo-form-inline" ref="searchForm" :model="formData">
-        <el-form-item
-          label="项目本地文件夹路径"
-          prop="docPath"
-          :rules="[{
-                    trigger: 'blur',
-                    required: true,
-                    message: '不能为空'
-                  }]"
-        >
-          <el-input v-model="formData.docPath" :disabled="true" placeholder="请输入本地文件夹路径">
-            <el-button slot="append" class="select-fold" type="primary" @click="selectFolder">选择文件夹</el-button>
-            <el-button slot="append" type="primary" @click="onQuery">搜索</el-button>
-          </el-input>
-        </el-form-item>
-      </el-form>
-      <h2 class="title">书籍列表</h2>
+      <h2 class="title">选择项目</h2>
       <el-row :gutter="12">
-        <el-col :span="4">
+        <el-col :span="6">
           <el-card shadow="hover">
             <div @click="showPop" class="box box-add" style="text-align:center;">
               <el-button type="primary" class="back" icon="el-icon-plus" circle></el-button>
             </div>
           </el-card>
         </el-col>
-        <draggable v-model="booksList" @end="end">
-          <el-col :span="4" v-for="item in booksList" :key="item.value">
-            <el-tooltip class="item" effect="dark" :content="item.label" placement="top">
-              <el-card shadow="hover">
-                <div
-                  class="box"
-                  @click="onGoEdit(item.value,item.label)"
-                  v-contextmenu:contextmenu
-                  @contextmenu.prevent="rightClick(item)"
-                >
-                  <h3>{{item.label}}</h3>
-                  <p>{{item.href}}</p>
-                </div>
-              </el-card>
-            </el-tooltip>
-          </el-col>
-        </draggable>
+
+        <el-col :span="6" v-for="item in projectList" :key="item.gitName">
+          <el-tooltip class="item" effect="dark" :content="item.gitName" placement="top">
+            <el-card shadow="hover">
+              <div
+                class="box"
+                @click="onGoDirectory(item.path,item.gitName)"
+                v-contextmenu:contextmenu
+                @contextmenu.prevent="rightClick(item)"
+              >
+                <h3>{{item.gitName}}</h3>
+                <p>当前分支：{{item.branchAction}}</p>
+              </div>
+            </el-card>
+          </el-tooltip>
+        </el-col>
       </el-row>
-      <v-contextmenu ref="contextmenu">
-        <v-contextmenu-item :disabled="true">
-          <i class="el-icon-edit"></i> 修改
-        </v-contextmenu-item>
-        <v-contextmenu-item @click="deleteBook">
-          <i class="el-icon-delete"></i> 删除
-        </v-contextmenu-item>
-      </v-contextmenu>
-      <el-dialog title="新增书本" :visible.sync="dialogFormVisible">
-        <el-form label-width="120px" ref="dataForm" :model="formData">
-          <el-form-item
-            label="书本名称"
-            prop="bookName"
-            :rules="[{
+      <div>
+        此版本需要安装git，请先确认是否已安装git，<a @click="goDow" href="javascript:void(0)">去下载</a><br>
+      </div>
+    </div>
+    <v-contextmenu ref="contextmenu">
+      <v-contextmenu-item :disabled="true">
+        <i class="el-icon-edit"></i> 修改
+      </v-contextmenu-item>
+      <v-contextmenu-item @click="showBranch">
+        <i class="el-icon-refresh"></i> 切换分支
+      </v-contextmenu-item>
+      <v-contextmenu-item @click="deleteProject">
+        <i class="el-icon-delete"></i> 删除
+      </v-contextmenu-item>
+    </v-contextmenu>
+    <el-dialog
+      title="新增项目"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+      :show-close="false"
+    >
+      <el-form label-width="120px" ref="dataForm" :model="formData">
+        <el-form-item
+          label="git地址"
+          prop="gitUrl"
+          :rules="[{
                     trigger: 'blur',
                     required: true,
                     message: '不能为空'
                   }]"
-          >
-            <el-input v-model="formData.bookName" placeholder="如：移动应用开发平台">
-              <el-select
-                style="width:100px"
-                v-model="formData.lang"
-                slot="append"
-                placeholder="请选择语言版本"
-                @change="langChange"
-              >
-                <el-option
-                  :label="item.label"
-                  :value="item.value"
-                  v-for="(item,index) in  langList"
-                  :key="index"
-                ></el-option>
-              </el-select>
-            </el-input>
-          </el-form-item>
-          <el-form-item
-            label="文件夹名称"
-            prop="bookCode"
-            :rules="[
-                    {trigger: 'blur', required: true, validator: validateBookCode},
-                  ]"
-          >
-            <el-input v-model="formData.bookCode" placeholder="如：ydyykfpt"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="closePop()">取 消</el-button>
-          <el-button type="primary" @click="onAddBook">确 定</el-button>
-        </div>
-      </el-dialog>
-    </div>
-    <!-- <el-button @click="max()">最大化</el-button> -->
+        >
+          <el-input
+            v-model="formData.gitUrl"
+            placeholder="如：http://gitlab.crc.com.cn/crcsoft-crcloud"
+            :disabled="loading"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="git名称"
+          prop="gitName"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
+          <el-input v-model="formData.gitName" :disabled="loading" placeholder="如：crcsoft-crcloud"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="git账号"
+          prop="user"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
+          <el-input v-model="formData.user" :disabled="loading" placeholder="请输入git账号"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="git密码"
+          prop="pass"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
+          <el-input
+            v-model="formData.pass"
+            show-password
+            :disabled="loading"
+            placeholder="请输入git密码"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="clone到本地"
+          prop="path"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
+          <el-input v-model="formData.path" placeholder="如：ydyykfpt" :disabled="loading">
+            <el-button slot="append" :disabled="loading" type="primary" @click="selectFolder">选择文件夹</el-button>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closePop()" :disabled="loading">取 消</el-button>
+        <el-button type="primary" :loading="loading" @click="onAddProject">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog
+      title="切换分支"
+      :visible.sync="dialogBranchVisible"
+      :close-on-click-modal="false"
+      :show-close="false"
+    >
+      <el-form label-width="120px" ref="branchForm" :model="branchData">
+        <el-form-item
+          label="git分支"
+          prop="branch"
+          :rules="[{
+                    trigger: 'blur',
+                    required: true,
+                    message: '不能为空'
+                  }]"
+        >
+          <el-select v-model="branchData.branch" :disabled="loading" placeholder="请选择分支版本">
+            <el-option
+              :label="item.name"
+              :value="item.name"
+              v-for="(item,index) in  actionItem.branchList"
+              :key="index"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeBranch" :disabled="loading">取 消</el-button>
+        <el-button type="primary" :loading="loading" @click="cutBranch">切 换</el-button>
+      </div>
+    </el-dialog>
   </el-scrollbar>
 </template>
 
 <script>
 import draggable from "vuedraggable";
-const langList = [
-  {
-    label: "简体版",
-    value: "zh-hans"
-  },
-  {
-    label: "繁体版",
-    value: "zh-tw"
-  },
-  {
-    label: "English",
-    value: "en-us"
-  }
-];
 export default {
-  data: function() {
+  name: "",
+  data() {
     return {
-      booksList: [],
-      langList,
-      formData: {
-        docPath: "D:/test_code/md_test",
-        aubBookPath: "",
-        bookName: "",
-        lang: langList[0].value,
-        langLabel: langList[0].label,
-        bookCode: "",
-        bookListDom: ""
-      },
-      action: {
-        bookCode: ""
-      },
+      projectList: JSON.parse(window.localStorage.getItem("projectList")) || [],
       dialogFormVisible: false,
-      formLabelWidth: "120px",
-      mainH: 800
+      formData: {
+        // gitUrl:
+        //   "http://gitlab.crc.com.cn/crcsoft-crcloud-portal/crcloud-doc-web.git",
+        // gitName: "crcloud-doc-web",
+        // path: "D:/test_code/ssss/aaa",
+        // user: "symbio-38",
+        // pass: "Liang1q2w3e4r2"
+        gitUrl: "",
+        gitName: "",
+        path: "",
+        user: "",
+        pass: ""
+      },
+      mainH: 800,
+      loading: false,
+      actionItem: {}, //右键选中的item
+      branchData: {
+        branch: ""
+      },
+      dialogBranchVisible: false
     };
-  },
-  mounted() {
-    this.init();
-    // window.addEventListener("resize", () => {
-    //   console.log("A");
-    //   this.mainH = document.documentElement.clientHeight - 40;
-    // });
-    console.log(this.$refs.myScrollbar);
-    this.mainH = document.documentElement.clientHeight - 40;
   },
   components: {
     draggable
   },
-  watch: {
-    "formData.bookName": {
-      handler(val) {
-        this.formData.bookCode = this.$pinyin.getFullChars(val).toLowerCase();
-      },
-      deep: true,
-      immediate: false
-    }
+  created() {
+    this.mainH = document.documentElement.clientHeight - 40;
+    this.init();
   },
   methods: {
-    // 选择文件夹
-    selectFolder() {
-      this.$api.get_folder().then(res => {
-        console.log(res);
-        if (res.code === 200) {
-          if (!res.data.canceled) {
-            // strurl = strurl .
-            this.formData.docPath = res.data.filePaths[0].replace(/\\/g, "/");
-          }
-        }
-      });
-    },
     init() {
-      this.formData.bookListDom = "";
-      this.formData.docPath =
-        this.$myLocalStorage.get("docPath") || "D:/test_code/md_test";
-      if (this.formData.docPath) {
-        this.onQuery();
-      }
-    },
-    onQuery() {
-      this.$refs["searchForm"].validate(valid => {
-        if (valid) {
-          this.$myLocalStorage.set("docPath", this.formData.docPath);
-          this.$api
-            .get_books({
-              docPath: this.formData.docPath
-            })
-            .then(res => {
-              console.log(res);
-              if (res.code === 200) {
-                this.booksList = res.data;
-                this.formData.aubBookPath = this.booksList[0].value;
-              }
-            });
-        }
-      });
-    },
-    onGoEdit(value, label) {
-      this.$router.push(`/edit?aubBookPath=${value}&bookLaebl=${label}`);
+      this.projectList =
+        JSON.parse(window.localStorage.getItem("projectList")) || [];
     },
     showPop() {
       this.dialogFormVisible = true;
@@ -207,117 +203,140 @@ export default {
     closePop() {
       this.dialogFormVisible = false;
     },
-    langChange() {
-      console.log(this.formData.lang);
-      this.formData.langLabel = this.langList.filter(item => {
-        return item.value == this.formData.lang;
-      })[0].label;
-
-      console.log(this.formData.langLabel);
-    },
-    finishingList() {
-      this.formData.bookListDom = "<ul>";
-      this.booksList.forEach(item => {
-        this.formData.bookListDom += `<li><a href="${item.href}">${item.label}</a></li>`;
-      });
-      this.formData.bookListDom += "/<ul>";
-    },
-
-    validateBookCode(rule, value, callback) {
-      if (!value) {
-        callback("不能为空");
-      } else {
-        this.booksList.forEach(item => {
-          if (item.href == this.formData.bookCode + "-" + this.formData.lang) {
-            callback("文件夹名称已重复");
+    // 选择文件夹
+    selectFolder() {
+      this.$api.get_folder().then(res => {
+        if (res.code === 200) {
+          if (!res.data.canceled) {
+            this.formData.path = res.data.filePaths[0].replace(/\\/g, "/");
           }
-        });
-        callback();
-      }
+        }
+      });
     },
-    // 新增书籍
-    onAddBook() {
+    // 添加项目
+    onAddProject() {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
-          this.booksList.push({
-            href: this.formData.bookCode + "-" + this.formData.lang,
-            label: this.formData.bookName + "-" + this.formData.langLabel,
-            value:
-              this.formData.docPath +
-              "/" +
-              this.formData.bookCode +
-              "-" +
-              this.formData.lang
-          });
-          this.finishingList();
-
+          this.loading = true;
           this.$api
-            .add_books({
-              bookName: this.formData.bookName + "-" + this.formData.langLabel,
-              bookCode: this.formData.bookCode + "-" + this.formData.lang,
-              docPath: this.formData.docPath,
-              bookListDom: this.formData.bookListDom
-            })
+            .git_clone(this.formData)
             .then(res => {
-              if (res.code === 200) {
+              console.log("sss");
+              this.loading = false;
+              if (res.code == 200) {
                 this.closePop();
+                const temp = { ...this.formData, ...res.data };
+                this.projectList.push(temp);
+                window.localStorage.setItem(
+                  "projectList",
+                  JSON.stringify(this.projectList)
+                );
               }
+            })
+            .catch(err => {
+              this.loading = false;
             });
         }
       });
     },
-    // 拖拽排序
-    end(event) {
-      var list = JSON.parse(JSON.stringify(this.booksList));
-      var list2 = JSON.parse(JSON.stringify(this.booksList));
-      list[event.oldIndex] = list2[event.oldIndex];
-      list[event.newIndex] = list2[event.newIndex];
-      this.booksList = list;
-      this.finishingList();
-      this.$api
-        .update_books_rank({
-          docPath: this.formData.docPath,
-          bookListDom: this.formData.bookListDom
-        })
-        .then(res => {
-          if (res.code === 200) {
-          }
-        });
+    rightClick(param) {
+      this.actionItem = param;
+      this.branchData.branch = param.branchAction;
     },
-    rightClick(op) {
-      console.log(op);
-      this.action.bookCode = op.href;
-      this.action.label = op.label;
-      this.action.label = op.label;
+    showBranch() {
+      this.dialogBranchVisible = true;
+      // this.$api.get_git_branch(this.formData).then(res => {
+      //   console.log(res);
+      // });
     },
-    deleteBook() {
-      this.$confirm(`是否确认删除 ${this.action.label} ?`, "提示", {
+    closeBranch() {
+      this.dialogBranchVisible = false;
+    },
+    // 切换分支
+    cutBranch() {
+      this.$refs["branchForm"].validate(valid => {
+        if (valid) {
+          const branchType = this.actionItem.branchList.filter(item => {
+            console.log(item);
+            return item.name == this.branchData.branch;
+          })[0].type;
+          this.loading = true;
+          this.$api
+            .switch_git_branch({
+              gitName: this.actionItem.gitName,
+              path: this.actionItem.path,
+              branch: this.branchData.branch,
+              branchType
+            })
+            .then(res => {
+              console.log(res);
+              if (res.code == 200) {
+                this.closeBranch();
+                this.updateList(res.data.branchAction, res.data.branchList);
+              }
+              this.loading = false;
+            });
+        }
+      });
+    },
+    // 更新数组
+    updateList(branchAction, branchList) {
+      let tempList = JSON.parse(JSON.stringify(this.projectList));
+      tempList = tempList.map(item => {
+        if (item.gitName == this.actionItem.gitName) {
+          item.branchAction = branchAction;
+          item.branchList = branchList;
+        }
+        return item;
+      });
+      this.projectList = tempList;
+      window.localStorage.setItem(
+        "projectList",
+        JSON.stringify(this.projectList)
+      );
+    },
+    deleteProject() {
+      this.$confirm(`是否确认删除 ${this.actionItem.gitName} ?`, "提示", {
         confirmButtonText: "删除",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          let index = 0;
-          this.booksList.forEach((item, i) => {
-            if (item.href === this.action.bookCode) {
-              index = i;
-            }
+          const delLoading = this.$loading({
+            lock: true,
+            text: "Loading",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)"
           });
-          this.booksList.splice(index, 1);
-          this.finishingList();
           this.$api
-            .del_books({
-              docPath: this.formData.docPath,
-              bookListDom: this.formData.bookListDom,
-              bookCode: this.action.bookCode
+            .del_project({
+              projectPath: `${this.actionItem.path}/${this.actionItem.gitName}`
             })
             .then(res => {
               if (res.code === 200) {
-                // this.init();
+                let index = 0;
+                this.projectList.forEach((item, i) => {
+                  if (item.gitName === this.actionItem.gitName) {
+                    index = i;
+                  }
+                });
+                this.projectList.splice(index, 1);
+                window.localStorage.setItem(
+                  "projectList",
+                  JSON.stringify(this.projectList)
+                );
               }
+              delLoading.close();
             });
         })
         .catch(() => {});
+    },
+    onGoDirectory(path, gitName) {
+      this.$router.push(`/directory?projectPath=${path}/${gitName}`);
+    },
+    // 去下载
+    goDow(){
+      window.electron.shell.openExternal('https://git-scm.com/');
     }
   }
 };
@@ -357,15 +376,6 @@ export default {
 <style lang="scss">
 .el-card__body {
   padding: 0;
-}
-.select-fold {
-  background: orangered !important;
-  color: #fff !important;
-  border-radius: 0 !important;
-  margin-right: 0px !important;
-  span {
-    color: #fff !important;
-  }
 }
 
 .el-scrollbar__wrap {

@@ -1,7 +1,6 @@
-import {
-  myLocalStorage, mySessionstorage
-} from '@/uilts/uilts'
+
 export default {
-  // 用户信息
-  userInfo: mySessionstorage.get('userInfo') || {},
+  gitChangeList: [],  //git文件改动列表
+  gitLoading: false,
+  projectPath: window.localStorage.getItem('projectPath') || ''
 };

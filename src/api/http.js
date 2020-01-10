@@ -8,6 +8,7 @@ export default param => {
     window.electron.ipcRenderer.send(param.url,param.data)
     return new Promise((resolve, reject) => {
       window.electron.ipcRenderer.on(param.url, (event, data) => {
+        // console.log(data)
         resolve(data)
         if(data.code!=200){
           Message({
@@ -21,6 +22,7 @@ export default param => {
         message: err,
         type: 'error'
       });
+     
     })
 
   }

@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 var child_process = require('child_process');
 var exec = child_process.exec;
-const api = require('./api/index.js')
+const Api = require('./api/index.js')
 let mainWindow
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -34,7 +34,7 @@ function createWindow() {
   })
 
 
-  new api(mainWindow);
+  new Api(mainWindow);
 }
 
 app.on('ready', createWindow)
